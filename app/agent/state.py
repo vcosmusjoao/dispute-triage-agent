@@ -21,8 +21,8 @@ class DisputeState(TypedDict, total=False):
     required_evidence: list[str]
 
     # populated by `assess`
-    score: float
-    signal_reasons: list[str]
+    win_probability: float
+    assess_reasoning: str
 
     # populated by `decide`
     recommendation: str  # "fight" | "accept"
