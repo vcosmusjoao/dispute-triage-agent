@@ -1,7 +1,10 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from app.agent.graph import dispute_graph
 from app.data.samples import SAMPLE_DISPUTES
@@ -23,6 +26,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# /disputes/analyze is the only endpoint that costs real money (it calls
+# Claude 2-3 times), so it's the only one worth capping. Once deployed
+# publicly with no auth, this is what stands between a bot/crawler and an
+# unbounded Anthropic bill - see architecture.md §7.
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+ANALYZE_RATE_LIMIT = os.getenv("ANALYZE_RATE_LIMIT", "10/minute")
+
 
 @app.get("/health")
 def health() -> dict[str, str]:
@@ -39,7 +51,8 @@ def list_samples() -> list[Dispute]:
 
 
 @app.post("/disputes/analyze")
-def analyze(dispute: Dispute) -> Verdict:
+@limiter.limit(ANALYZE_RATE_LIMIT)
+def analyze(request: Request, dispute: Dispute) -> Verdict:
     final_state = dispute_graph.invoke({"dispute": dispute})
     return Verdict(
         recommendation=final_state["recommendation"],

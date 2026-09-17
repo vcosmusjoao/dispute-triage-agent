@@ -15,7 +15,7 @@ from app.agent.nodes import classify as classify_module
 from app.agent.nodes import draft as draft_module
 from app.agent.nodes.decide import decide
 from app.data.samples import DISPUTE_CLEAR_FIGHT, SAMPLE_DISPUTES
-from app.main import app
+from app.main import ANALYZE_RATE_LIMIT, app, limiter
 
 
 class _FakeToolUseBlock:
@@ -206,3 +206,23 @@ def test_analyze_endpoint_uses_the_graph(monkeypatch):
     body = response.json()
     assert body["reason_code_meaning"] == "Mocked meaning"
     assert body["recommendation"] == "fight"
+
+
+def test_analyze_endpoint_is_rate_limited(monkeypatch):
+    # Reset first: the limiter's storage is shared app state, so an earlier
+    # test's requests from the same TestClient "IP" would otherwise count
+    # against this one's quota.
+    limiter.reset()
+    _mock_llm_nodes(monkeypatch, win_probability=0.9)
+    client = TestClient(app)
+    payload = SAMPLE_DISPUTES[0].model_dump(mode="json")
+
+    max_requests = int(ANALYZE_RATE_LIMIT.split("/")[0])
+    for _ in range(max_requests):
+        response = client.post("/disputes/analyze", json=payload)
+        assert response.status_code == 200
+
+    over_limit = client.post("/disputes/analyze", json=payload)
+    assert over_limit.status_code == 429
+
+    limiter.reset()

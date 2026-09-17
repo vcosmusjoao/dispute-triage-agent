@@ -38,6 +38,14 @@ Open http://localhost:3000 — pick a sample dispute (or paste your own JSON) an
 own hot-reload/client assets from an origin it doesn't recognize as itself, and the
 page will render but never come alive if you open it via the IP.
 
+## Config
+
+| Env var | Default | Purpose |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | — (required) | Claude API access. |
+| `FRONTEND_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000` | CORS allowlist, comma-separated. Add the deployed frontend's URL here. |
+| `ANALYZE_RATE_LIMIT` | `10/minute` | Per-IP cap on `POST /disputes/analyze` — the only endpoint that spends real Claude credits. Exists so a public deployment can't be hit with an unbounded bill by a bot/crawler (no auth in v1, see `architecture.md` §7). |
+
 ## Test
 
 ```bash
