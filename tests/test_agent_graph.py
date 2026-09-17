@@ -12,8 +12,9 @@ from fastapi.testclient import TestClient
 from app.agent.graph import build_graph
 from app.agent.nodes import assess as assess_module
 from app.agent.nodes import classify as classify_module
+from app.agent.nodes import draft as draft_module
 from app.agent.nodes.decide import decide
-from app.data.samples import SAMPLE_DISPUTES
+from app.data.samples import DISPUTE_CLEAR_FIGHT, SAMPLE_DISPUTES
 from app.main import app
 
 
@@ -45,6 +46,11 @@ def _mock_llm_nodes(monkeypatch, *, win_probability: float = 0.8):
         assess_module,
         "_get_client",
         _fake_client({"win_probability": win_probability, "reasoning": "Mocked reasoning."}),
+    )
+    monkeypatch.setattr(
+        draft_module,
+        "_get_client",
+        _fake_client({"letter": "Mocked representment letter."}),
     )
 
 
@@ -105,6 +111,86 @@ def test_decide_accepts_when_probability_is_low():
     out = decide({"win_probability": 0.2, "assess_reasoning": "x"})
     assert out["recommendation"] == "accept"
     assert out["confidence"] == 0.8  # 0.5 + |0.2 - 0.5|
+
+
+def test_draft_yields_nonempty_on_topic_letter_for_fight_sample(monkeypatch):
+    letter = (
+        f"Re: Dispute {DISPUTE_CLEAR_FIGHT.dispute_id}\n\n"
+        "We are contesting this chargeback. Our proof of delivery and tracking number "
+        "confirm the shipment reached the cardholder, and our IP logs corroborate the "
+        "session. We request the chargeback be reversed."
+    )
+    monkeypatch.setattr(draft_module, "_get_client", _fake_client({"letter": letter}))
+
+    state = {
+        "dispute": DISPUTE_CLEAR_FIGHT,
+        "reason_code_meaning": "Merchandise/Services Not Received",
+        "why": "Fight - strong delivery evidence.",
+    }
+    update = draft_module.draft(state)
+
+    result = update["draft_rebuttal"]
+    assert result
+    assert DISPUTE_CLEAR_FIGHT.dispute_id in result  # on-topic: names the actual dispute
+
+
+def test_evidence_lists_splits_available_and_unavailable_correctly():
+    # DISPUTE_CLEAR_ACCEPT has no evidence at all; DISPUTE_CLEAR_FIGHT has
+    # every kind. This is the contract draft() hands to Claude - get this
+    # split wrong and no prompt wording can save you from a bad letter.
+    accept_dispute = SAMPLE_DISPUTES[1]
+    assert accept_dispute.dispute_id == "DSP-1002"
+
+    available, unavailable = draft_module._evidence_lists({"dispute": accept_dispute})
+    assert available == []
+    assert set(unavailable) == {
+        "proof of delivery",
+        "tracking number",
+        "accepted terms of service",
+        "IP/session logs",
+    }
+
+    available, unavailable = draft_module._evidence_lists({"dispute": DISPUTE_CLEAR_FIGHT})
+    assert unavailable == []
+    assert "proof of delivery" in available
+
+
+def test_prompt_tells_claude_not_to_claim_unavailable_evidence():
+    accept_dispute = SAMPLE_DISPUTES[1]
+    prompt = draft_module._prompt({"dispute": accept_dispute})
+
+    assert "Evidence AVAILABLE (you may cite these): none" in prompt
+    assert "proof of delivery" in prompt  # listed, but under NOT AVAILABLE
+    assert "do not claim these exist" in prompt.lower()
+    assert "Only cite evidence listed as AVAILABLE" in prompt
+
+
+def test_fallback_letter_never_includes_evidence_marked_unavailable():
+    # The fallback (used when Claude itself is unreachable) is built purely
+    # from the `available` list in code, not generated prose - so it can't
+    # hallucinate by construction. Worth asserting explicitly since it's the
+    # one draft_rebuttal path a flaky network can actually put in front of
+    # a real user.
+    accept_dispute = SAMPLE_DISPUTES[1]
+    update = draft_module._fallback({"dispute": accept_dispute, "why": "Fight anyway (test)."})
+
+    letter_lower = update["draft_rebuttal"].lower()
+    for item in ["proof of delivery", "tracking number", "accepted terms of service", "ip/session logs"]:
+        assert item not in letter_lower
+
+
+def test_draft_falls_back_to_templated_letter_when_claude_is_unavailable(monkeypatch):
+    def _boom():
+        raise RuntimeError("no api key configured")
+
+    monkeypatch.setattr(draft_module, "_get_client", _boom)
+
+    update = draft_module.draft(
+        {"dispute": DISPUTE_CLEAR_FIGHT, "why": "Fight - strong evidence."}
+    )
+
+    assert update["draft_rebuttal"]
+    assert DISPUTE_CLEAR_FIGHT.dispute_id in update["draft_rebuttal"]
 
 
 def test_analyze_endpoint_uses_the_graph(monkeypatch):

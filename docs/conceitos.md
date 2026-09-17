@@ -115,7 +115,45 @@ _(a preencher quando a gente aprofundar)_
 
 ## 🧱 6. Edge e conditional edge
 
-_(a preencher — a ligação entre os nós e o "switch" que decide o caminho)_
+Um **edge** (aresta) fixo é simples: "depois do nó A, sempre roda o nó B" —
+`graph.add_edge("classify", "assess")`. Sem decisão nenhuma.
+
+Um **conditional edge** é esse mesmo "depois de A" só que com uma bifurcação.
+Em vez de apontar direto pro próximo nó, ele aponta pra uma **função Python
+comum** que:
+
+1. recebe o state atual (já com o que o nó anterior acabou de preencher);
+2. lê uma gaveta dele;
+3. devolve uma **string-chave** (não o nome do nó em si).
+
+```python
+def _route_after_decide(state: DisputeState) -> str:
+    return "draft" if state["recommendation"] == "fight" else END
+```
+
+Essa string é procurada num dict que você declara junto com a edge —
+`{"draft": "draft", END: END}` — e o valor encontrado é o nome do nó real
+pra onde o LangGraph vai. A função não "manda" pra lugar nenhum sozinha; ela
+só devolve uma chave, e o mapa é que resolve o destino. Isso é o que dá o
+nome "roteamento por state": o caminho que o grafo percorre em cada
+execução depende só do que já está escrito na caixa naquele momento —
+nenhuma outra lógica externa entra aqui.
+
+No pipeline de disputas: `decide` roda e escreve `recommendation`. A
+conditional edge lê esse campo — se `"fight"`, despacha pro nó `draft`
+(que gera a carta de verdade); se `"accept"`, despacha direto pro `END`,
+e o `draft` nunca roda. Como o `draft_rebuttal` só é escrito dentro do nó
+`draft`, no caminho accept essa gaveta **nunca chega a existir** na caixa —
+é por isso que `final_state.get("draft_rebuttal")` em `app/main.py` devolve
+`None` de graça, sem nenhum `if` explícito pra isso.
+
+- 🅰️ **Ponte Angular:** mais perto de um `switch` dentro de um `effect` do
+  que de qualquer coisa reativa/Observable — não tem stream nem
+  subscription, é só "olha o state, devolve uma chave, o mapa resolve o
+  próximo passo".
+- 💻 **No projeto:** `_route_after_decide` e o `add_conditional_edges` em
+  `app/agent/graph.py`; o campo que ele lê (`recommendation`) é escrito por
+  `decide` em `app/agent/nodes/decide.py`.
 
 > ✏️ **TUA VEZ:**
 
