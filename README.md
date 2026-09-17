@@ -30,7 +30,25 @@ Swagger UI: http://127.0.0.1:8000/docs
 uv run pytest
 ```
 
+Hermetic — the Claude client is mocked, so this never hits the network.
+
+## Eval
+
+```bash
+uv run python -m eval.run
+```
+
+Not a pytest test: it makes real Claude calls (~20 for the 10-case set), so
+it costs a little and isn't run automatically. Use it after touching a
+prompt, the assess/decide policy, or the reason-code data, to check the
+agent didn't regress. Clear-cut cases are asserted; ambiguous cases print
+their reasoning for you to read.
+
 ## Status
 
-Milestone 0 — project scaffolding, data contracts, and sample disputes. The
-LangGraph agent (classify → assess → decide → draft) lands in later milestones.
+Milestone 3 — the agent graph (classify → assess → decide → draft) is live:
+`classify` and `assess` reason with Claude (structured output, with a
+deterministic fallback if the call fails); `decide` is a transparent policy
+over `assess`'s win-probability estimate; `draft` is still a stub
+(Milestone 4). See [docs/conceitos.md](docs/conceitos.md) for a running
+concept-by-concept study log of how this was built.
