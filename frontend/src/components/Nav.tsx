@@ -10,13 +10,13 @@ export default function Nav() {
         <div className="flex gap-4 text-sm">
           <Link
             href="/"
-            className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            className="text-neutral-500 hover:text-violet-600 dark:text-neutral-400 dark:hover:text-violet-400"
           >
             Demo
           </Link>
           <Link
             href="/how-it-works"
-            className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            className="text-neutral-500 hover:text-violet-600 dark:text-neutral-400 dark:hover:text-violet-400"
           >
             How it works
           </Link>

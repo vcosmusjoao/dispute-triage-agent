@@ -47,7 +47,7 @@ export default function VerdictResult({ verdict }: { verdict: Verdict }) {
           </pre>
         ) : (
           <p className="mt-1 text-sm italic text-neutral-500 dark:text-neutral-400">
-            No letter — we&apos;re recommending accepting this chargeback.
+            No letter. We&apos;re recommending accepting this chargeback.
           </p>
         )}
       </div>

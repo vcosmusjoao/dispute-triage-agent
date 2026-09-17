@@ -5,7 +5,7 @@ const STEPS = [
   },
   {
     name: "assess",
-    detail: "Weighs the merchant's actual signals against each other — Claude reasons about conflicts, not a lookup table.",
+    detail: "Weighs the merchant's actual signals against each other. Claude reasons about conflicts, not a lookup table.",
   },
   {
     name: "decide",
@@ -13,7 +13,7 @@ const STEPS = [
   },
   {
     name: "draft",
-    detail: "Only reached on \"fight\" — Claude writes the representment letter, citing only evidence the merchant actually has.",
+    detail: "Only reached on \"fight\". Claude writes the representment letter, citing only evidence the merchant actually has.",
   },
 ];
 
@@ -43,7 +43,7 @@ export default function PipelineDiagram() {
       <p className="mt-4 text-xs text-neutral-500 dark:text-neutral-400">
         The step from <code>decide</code> to <code>draft</code> is a conditional edge: it only
         fires when the recommendation is &quot;fight&quot;. On &quot;accept&quot;, the graph ends
-        right after <code>decide</code> — no letter is generated, no extra Claude call is spent.
+        right after <code>decide</code>. No letter is generated, no extra Claude call is spent.
       </p>
     </div>
   );

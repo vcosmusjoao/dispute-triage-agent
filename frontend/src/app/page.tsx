@@ -37,7 +37,7 @@ export default function Home() {
     try {
       dispute = JSON.parse(jsonText);
     } catch {
-      setError("That's not valid JSON — check for a missing comma or bracket.");
+      setError("That's not valid JSON. Check for a missing comma or bracket.");
       return;
     }
 
@@ -60,9 +60,9 @@ export default function Home() {
         </h1>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           Paste a chargeback dispute, or load a sample, to see the agent&apos;s fight/accept
-          recommendation and — when it recommends fighting — the drafted representment letter.
+          recommendation and, when it recommends fighting, the drafted representment letter.
           New to the domain? See{" "}
-          <Link href="/how-it-works" className="underline hover:text-neutral-700 dark:hover:text-neutral-300">
+          <Link href="/how-it-works" className="text-violet-600 underline hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-300">
             how it works
           </Link>
           {" "}first.
