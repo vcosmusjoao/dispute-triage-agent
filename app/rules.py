@@ -65,9 +65,12 @@ _MINOR = 0.10
 _SMALL = 0.05
 
 
-def evaluate(dispute: Dispute) -> Verdict:
-    meaning, required_evidence = REASON_CODES.get(dispute.reason_code, DEFAULT_REASON)
-
+def score_signals(dispute: Dispute) -> tuple[float, list[str]]:
+    """Weigh the deterministic signals into a score in [-1, 1] and the
+    reasons that produced it. Shared by `evaluate()` below and by the
+    `assess` graph node (app/agent/nodes/assess.py) so both paths use the
+    same baseline heuristic.
+    """
     score = 0.0
     reasons: list[str] = []
 
@@ -121,16 +124,33 @@ def evaluate(dispute: Dispute) -> Verdict:
         score += _SMALL
         reasons.append("IP/device logs available")
 
-    score = max(-1.0, min(1.0, score))
+    return max(-1.0, min(1.0, score)), reasons
+
+
+def recommend_from_score(score: float) -> tuple[str, float]:
+    """Score's sign picks fight/accept; its magnitude (not direction)
+    becomes confidence - a lopsided score means a clear-cut case either way.
+    """
     recommendation = "fight" if score >= 0 else "accept"
     confidence = round(min(0.95, max(0.5, 0.5 + abs(score) / 2)), 2)
+    return recommendation, confidence
 
-    why = (
+
+def explain(recommendation: str, confidence: float, reasons: list[str]) -> str:
+    if not reasons:
+        return f"Recommending {recommendation} with {confidence:.0%} confidence based on limited signal data."
+    return (
         f"Recommending {recommendation} with {confidence:.0%} confidence. "
         f"Signals considered: {', '.join(reasons)}."
-        if reasons
-        else f"Recommending {recommendation} with {confidence:.0%} confidence based on limited signal data."
     )
+
+
+def evaluate(dispute: Dispute) -> Verdict:
+    meaning, required_evidence = REASON_CODES.get(dispute.reason_code, DEFAULT_REASON)
+
+    score, reasons = score_signals(dispute)
+    recommendation, confidence = recommend_from_score(score)
+    why = explain(recommendation, confidence, reasons)
 
     return Verdict(
         recommendation=recommendation,
