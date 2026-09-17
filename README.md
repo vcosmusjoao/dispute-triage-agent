@@ -46,6 +46,26 @@ page will render but never come alive if you open it via the IP.
 | `FRONTEND_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000` | CORS allowlist, comma-separated. Add the deployed frontend's URL here. |
 | `ANALYZE_RATE_LIMIT` | `10/minute` | Per-IP cap on `POST /disputes/analyze` — the only endpoint that spends real Claude credits. Exists so a public deployment can't be hit with an unbounded bill by a bot/crawler (no auth in v1, see `architecture.md` §7). |
 
+## Deploy
+
+**Backend (Render):** [render.yaml](render.yaml) is a Blueprint — on Render, "New +" →
+"Blueprint" → connect this repo. It reads the file, sets up the build (`pip install .`)
+and start (`uvicorn ... --host 0.0.0.0 --port $PORT`) commands, and prompts you for
+`ANTHROPIC_API_KEY` (never stored in the repo). Deploy, then copy the resulting URL
+(`https://<name>.onrender.com`).
+
+**Frontend (Vercel):** import the repo, set the project **root directory to `frontend`**
+(it's a subfolder, not the repo root), and set `NEXT_PUBLIC_API_URL` to the Render URL
+from above. Deploy, then copy the resulting URL.
+
+**Wire them together:** back on Render, add a `FRONTEND_ORIGINS` env var set to the
+Vercel URL (comma-separate if you keep localhost too) and redeploy — until this is set,
+the browser will block the frontend's requests as CORS violations, same as the
+localhost-vs-127.0.0.1 mismatch during local dev.
+
+Render's free tier spins the service down after inactivity; the first request after a
+while sleeping takes ~30-50s to cold-start. Expected, not a bug.
+
 ## Test
 
 ```bash

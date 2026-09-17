@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: dispute-triage-agent
+    runtime: python
+    plan: free
+    buildCommand: pip install .
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false # set in the Render dashboard - never committed
+      - key: ANALYZE_RATE_LIMIT
+        value: 10/minute
+      # FRONTEND_ORIGINS is deliberately left out: it needs the Vercel URL,
+      # which doesn't exist until the frontend is deployed. Add it via the
+      # Render dashboard once that URL is known (see README).
