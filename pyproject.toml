@@ -21,3 +21,11 @@ dev = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+# Without this, setuptools' auto-discovery finds eval/ (a real Python
+# package, used for the offline eval harness) and frontend/ (not Python at
+# all, but looks like a candidate directory to it) alongside app/, and
+# refuses to guess which one is the actual package to ship. Only app/ is
+# needed to run the deployed service.
+include = ["app*"]
