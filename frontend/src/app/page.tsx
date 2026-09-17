@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import DisputeForm from "@/components/DisputeForm";
 import VerdictResult from "@/components/VerdictResult";
@@ -55,11 +56,16 @@ export default function Home() {
     <main className="mx-auto max-w-5xl px-6 py-12">
       <header className="mb-8">
         <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-          Dispute Triage Agent
+          Try the agent
         </h1>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           Paste a chargeback dispute, or load a sample, to see the agent&apos;s fight/accept
           recommendation and — when it recommends fighting — the drafted representment letter.
+          New to the domain? See{" "}
+          <Link href="/how-it-works" className="underline hover:text-neutral-700 dark:hover:text-neutral-300">
+            how it works
+          </Link>
+          {" "}first.
         </p>
       </header>
 
