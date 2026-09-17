@@ -64,7 +64,7 @@ def test_graph_runs_end_to_end_and_fights_on_high_probability(monkeypatch):
         assert result["recommendation"] == "fight"
         assert result["reason_code_meaning"] == "Mocked meaning"
         assert result["win_probability"] == 0.85
-        assert result["draft_rebuttal"] is not None  # fight path reaches draft
+        assert result["draft_rebuttal"] is not None
 
 
 def test_graph_accepts_and_skips_draft_on_low_probability(monkeypatch):
@@ -74,7 +74,7 @@ def test_graph_accepts_and_skips_draft_on_low_probability(monkeypatch):
     result = graph.invoke({"dispute": SAMPLE_DISPUTES[0]})
 
     assert result["recommendation"] == "accept"
-    assert result.get("draft_rebuttal") is None  # accept path skips draft
+    assert result.get("draft_rebuttal") is None
 
 
 def test_classify_falls_back_when_claude_is_unavailable(monkeypatch):
@@ -111,6 +111,14 @@ def test_decide_accepts_when_probability_is_low():
     out = decide({"win_probability": 0.2, "assess_reasoning": "x"})
     assert out["recommendation"] == "accept"
     assert out["confidence"] == 0.8  # 0.5 + |0.2 - 0.5|
+
+
+def test_decide_fights_at_exactly_the_threshold():
+    # FIGHT_THRESHOLD uses >=, not >, so a coin-flip probability should
+    # round up to "fight" rather than falling through to "accept".
+    out = decide({"win_probability": 0.5, "assess_reasoning": "x"})
+    assert out["recommendation"] == "fight"
+    assert out["confidence"] == 0.5
 
 
 def test_draft_yields_nonempty_on_topic_letter_for_fight_sample(monkeypatch):
@@ -206,6 +214,16 @@ def test_analyze_endpoint_uses_the_graph(monkeypatch):
     body = response.json()
     assert body["reason_code_meaning"] == "Mocked meaning"
     assert body["recommendation"] == "fight"
+
+
+def test_analyze_endpoint_rejects_invalid_payload():
+    # Pydantic validates the request body before any node runs, so this
+    # doesn't need the LLM mocked - a malformed Dispute never reaches the graph.
+    client = TestClient(app)
+
+    response = client.post("/disputes/analyze", json={"dispute_id": "not-a-real-dispute"})
+
+    assert response.status_code == 422
 
 
 def test_analyze_endpoint_is_rate_limited(monkeypatch):

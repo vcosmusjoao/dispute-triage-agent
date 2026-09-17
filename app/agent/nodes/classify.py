@@ -10,17 +10,11 @@ so the graph still produces a usable result.
 
 import logging
 
-import anthropic
-from dotenv import load_dotenv
-
+from app.agent.llm import MODEL, get_client as _get_client
 from app.agent.state import DisputeState
 from app.rules import DEFAULT_REASON, REASON_CODES
 
 logger = logging.getLogger(__name__)
-
-load_dotenv()
-
-MODEL = "claude-sonnet-5"
 
 _CLASSIFY_TOOL = {
     "name": "classify_reason_code",
@@ -41,15 +35,6 @@ _CLASSIFY_TOOL = {
         "required": ["meaning", "required_evidence"],
     },
 }
-
-_client: anthropic.Anthropic | None = None
-
-
-def _get_client() -> anthropic.Anthropic:
-    global _client
-    if _client is None:
-        _client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
-    return _client
 
 
 def classify(state: DisputeState) -> dict:

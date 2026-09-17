@@ -10,16 +10,10 @@ the available evidence, mirroring the fallback in the other two LLM nodes.
 
 import logging
 
-import anthropic
-from dotenv import load_dotenv
-
+from app.agent.llm import MODEL, get_client as _get_client
 from app.agent.state import DisputeState
 
 logger = logging.getLogger(__name__)
-
-load_dotenv()
-
-MODEL = "claude-sonnet-5"
 
 _DRAFT_TOOL = {
     "name": "draft_rebuttal",
@@ -40,15 +34,6 @@ _DRAFT_TOOL = {
         "required": ["letter"],
     },
 }
-
-_client: anthropic.Anthropic | None = None
-
-
-def _get_client() -> anthropic.Anthropic:
-    global _client
-    if _client is None:
-        _client = anthropic.Anthropic()
-    return _client
 
 
 def _evidence_lists(state: DisputeState) -> tuple[list[str], list[str]]:

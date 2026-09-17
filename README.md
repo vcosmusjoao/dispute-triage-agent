@@ -9,6 +9,16 @@ Domain: card chargebacks. All sample data is synthetic — see [docs/decisions.m
 
 Design docs: [docs/architecture.md](docs/architecture.md), [docs/decisions.md](docs/decisions.md).
 
+## Pipeline
+
+One dispute flows through a LangGraph agent, four nodes deep:
+
+`classify` (interpret the reason code) → `assess` (weigh the merchant's actual signals against
+each other) → `decide` (deterministic fight/accept policy over `assess`'s probability) → `draft`
+(write the representment letter — only reached on "fight"). See the app's
+[How It Works](frontend/src/app/how-it-works/page.tsx) page or
+[docs/architecture.md](docs/architecture.md) for the full breakdown.
+
 ## Setup
 
 ```bash
@@ -23,6 +33,25 @@ uv run uvicorn app.main:app --reload
 ```
 
 Swagger UI: http://127.0.0.1:8000/docs
+
+## Example
+
+```bash
+curl http://127.0.0.1:8000/disputes/samples | jq '.[0]' > dispute.json
+curl -X POST http://127.0.0.1:8000/disputes/analyze \
+  -H "Content-Type: application/json" -d @dispute.json
+```
+
+```json
+{
+  "recommendation": "fight",
+  "confidence": 0.87,
+  "reason_code_meaning": "Merchandise/services not received",
+  "why": "Fight — estimated 87% chance of winning if contested. Strong delivery proof and a clean auth/history profile outweigh the claim.",
+  "required_evidence": ["Proof of delivery", "Tracking number showing delivery", "Terms accepted at purchase"],
+  "draft_rebuttal": "Re: Dispute DSP-1001 - Reason Code 13.1\n..."
+}
+```
 
 ## Run the frontend
 

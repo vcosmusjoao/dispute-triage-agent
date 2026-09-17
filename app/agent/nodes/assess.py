@@ -9,17 +9,11 @@ unavailable it degrades to the deterministic rules score.
 
 import logging
 
-import anthropic
-from dotenv import load_dotenv
-
+from app.agent.llm import MODEL, get_client as _get_client
 from app.agent.state import DisputeState
 from app.rules import score_signals
 
 logger = logging.getLogger(__name__)
-
-load_dotenv()
-
-MODEL = "claude-sonnet-5"
 
 _ASSESS_TOOL = {
     "name": "assess_dispute",
@@ -39,15 +33,6 @@ _ASSESS_TOOL = {
         "required": ["win_probability", "reasoning"],
     },
 }
-
-_client: anthropic.Anthropic | None = None
-
-
-def _get_client() -> anthropic.Anthropic:
-    global _client
-    if _client is None:
-        _client = anthropic.Anthropic()
-    return _client
 
 
 def _yn(value: bool | None) -> str:
