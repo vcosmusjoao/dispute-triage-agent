@@ -10,22 +10,18 @@ export const metadata: Metadata = {
 
 export default function HowItWorks() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
+    <main className="max-w-3xl py-8">
       <header className="mb-10">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-          How it works
-        </h1>
-        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        <h1 className="text-2xl">How it works</h1>
+        <p className="mt-1 text-sm text-text/60">
           The domain, the decision, and why it&apos;s an agent instead of an if/else chain.
         </p>
       </header>
 
       <div className="flex flex-col gap-10">
         <section>
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-            What&apos;s a chargeback
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+          <h2 className="text-lg">What&apos;s a chargeback</h2>
+          <p className="mt-2 text-sm leading-relaxed text-text/80">
             A{" "}
             <Term definition="The person who owns the card and made the original purchase.">
               cardholder
@@ -42,14 +38,14 @@ export default function HowItWorks() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+          <h2 className="text-lg">
             Why the{" "}
             <Term definition="The card network's classification for why the dispute was filed, e.g. fraud or item not received. Set by the issuer, interpreted by the merchant.">
               reason code
             </Term>{" "}
             matters
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+          <p className="mt-2 text-sm leading-relaxed text-text/80">
             Every dispute carries a card-network reason code: &quot;product not received,&quot;
             &quot;fraud, card-not-present,&quot; &quot;cancelled service,&quot; and dozens more.
             The code isn&apos;t bureaucratic labeling, it determines what evidence actually
@@ -73,13 +69,13 @@ export default function HowItWorks() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+          <h2 className="text-lg">
             Fight or accept:{" "}
             <Term definition="The merchant's formal written rebuttal, submitted with evidence, arguing the charge was legitimate.">
               representment
             </Term>
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+          <p className="mt-2 text-sm leading-relaxed text-text/80">
             To fight a chargeback, the merchant submits a formal written rebuttal, a
             representment letter, with documented evidence that the charge was legitimate. That
             takes real effort, and fighting isn&apos;t free even when you have a case: card
@@ -91,10 +87,8 @@ export default function HowItWorks() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-            The pipeline
-          </h2>
-          <p className="mt-2 mb-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+          <h2 className="text-lg">The pipeline</h2>
+          <p className="mt-2 mb-4 text-sm leading-relaxed text-text/80">
             One dispute flows through four steps, each one handing the next a little more of the
             final verdict:
           </p>
@@ -102,10 +96,8 @@ export default function HowItWorks() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-            Why an LLM, not a rules engine
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+          <h2 className="text-lg">Why an LLM, not a rules engine</h2>
+          <p className="mt-2 text-sm leading-relaxed text-text/80">
             A rules engine handles the easy cases fine: AVS mismatch plus a foreign IP is almost
             always a loss, clean history plus solid delivery proof is almost always a win. The
             hard cases are the ones where signals point in different directions: a 4-year
@@ -119,7 +111,7 @@ export default function HowItWorks() {
 
         <Link
           href="/"
-          className="self-start rounded-lg bg-violet-600 px-5 py-2.5 font-medium text-white transition hover:bg-violet-500"
+          className="self-start rounded-md border border-highlight bg-highlight/10 px-5 py-2.5 font-fira-code font-medium text-highlight transition hover:bg-highlight/20"
         >
           Try the demo →
         </Link>

@@ -42,7 +42,7 @@ export default function Term({
         onMouseLeave={() => setOpen(false)}
         onBlur={() => setOpen(false)}
         aria-expanded={open}
-        className="cursor-help border-b border-dotted border-violet-400 font-medium text-violet-700 hover:border-violet-600 hover:text-violet-800 dark:border-violet-600 dark:text-violet-300 dark:hover:border-violet-400 dark:hover:text-violet-200"
+        className="cursor-help border-b border-dotted border-highlight/60 font-fira-code text-highlight hover:border-highlight"
       >
         {children}
       </button>
@@ -50,7 +50,7 @@ export default function Term({
         <span
           role="tooltip"
           style={{ left: position.left, top: position.top }}
-          className="fixed z-10 w-56 -translate-y-full rounded-md border border-violet-200 bg-white p-2 text-xs font-normal text-neutral-700 shadow-lg dark:border-violet-900 dark:bg-neutral-900 dark:text-neutral-300"
+          className="fixed z-10 w-56 -translate-y-full rounded-md border border-highlight/40 bg-bg p-2 text-xs text-text/90 shadow-[2px_2px_0_0_var(--color-highlight)]"
         >
           {definition}
         </span>

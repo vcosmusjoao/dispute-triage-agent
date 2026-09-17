@@ -53,16 +53,14 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-12">
+    <main className="py-8">
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-          Try the agent
-        </h1>
-        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        <h1 className="text-2xl">Try the agent</h1>
+        <p className="mt-1 text-sm text-text/60">
           Paste a chargeback dispute, or load a sample, to see the agent&apos;s fight/accept
           recommendation and, when it recommends fighting, the drafted representment letter.
           New to the domain? See{" "}
-          <Link href="/how-it-works" className="text-violet-600 underline hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-300">
+          <Link href="/how-it-works" className="text-highlight underline hover:text-highlight/80">
             how it works
           </Link>
           {" "}first.
@@ -81,15 +79,13 @@ export default function Home() {
 
         <div>
           {error && (
-            <p className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+            <p className="rounded-md border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">
               {error}
             </p>
           )}
           {verdict && <VerdictResult verdict={verdict} />}
           {!verdict && !error && (
-            <p className="text-sm text-neutral-400 dark:text-neutral-500">
-              Analyze a dispute to see the verdict here.
-            </p>
+            <p className="text-sm text-text/40">Analyze a dispute to see the verdict here.</p>
           )}
         </div>
       </div>

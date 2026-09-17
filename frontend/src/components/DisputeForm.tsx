@@ -22,16 +22,14 @@ export default function DisputeForm({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <p className="mb-2 text-sm font-medium text-neutral-600 dark:text-neutral-400">
-          Load a sample dispute
-        </p>
+        <p className="mb-2 font-fira-code text-sm text-text/60">Load a sample dispute</p>
         <div className="flex flex-wrap gap-2">
           {samples.map((sample) => (
             <button
               key={sample.dispute_id}
               type="button"
               onClick={() => onSelectSample(sample)}
-              className="rounded-full border border-neutral-300 px-3 py-1 text-sm text-neutral-700 transition hover:border-violet-400 hover:bg-violet-50 hover:text-violet-700 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-violet-500 dark:hover:bg-violet-950 dark:hover:text-violet-300"
+              className="rounded-full border border-highlight/40 px-3 py-1 font-fira-code text-xs text-highlight transition hover:bg-highlight/10"
             >
               {sample.dispute_id} · {sample.reason_code}
             </button>
@@ -40,7 +38,7 @@ export default function DisputeForm({
       </div>
 
       <div>
-        <label htmlFor="dispute-json" className="mb-2 block text-sm font-medium text-neutral-600 dark:text-neutral-400">
+        <label htmlFor="dispute-json" className="mb-2 block font-fira-code text-sm text-text/60">
           Dispute JSON (editable)
         </label>
         <textarea
@@ -48,7 +46,7 @@ export default function DisputeForm({
           value={jsonText}
           onChange={(e) => onJsonTextChange(e.target.value)}
           spellCheck={false}
-          className="h-72 w-full resize-y rounded-lg border border-neutral-300 bg-neutral-50 p-3 font-mono text-xs text-neutral-800 focus:border-violet-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
+          className="h-72 w-full resize-y rounded-md border border-text/20 bg-text/5 p-3 font-mono text-xs text-text focus:border-highlight focus:outline-none"
         />
       </div>
 
@@ -56,7 +54,7 @@ export default function DisputeForm({
         type="button"
         onClick={onSubmit}
         disabled={loading}
-        className="self-start rounded-lg bg-violet-600 px-5 py-2.5 font-medium text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+        className="self-start rounded-md border border-highlight bg-highlight/10 px-5 py-2.5 font-fira-code font-medium text-highlight transition hover:bg-highlight/20 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? "Analyzing…" : "Analyze dispute"}
       </button>
