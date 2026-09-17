@@ -188,9 +188,98 @@ Mas não é mágica — dois modos de falha clássicos:
 
 ---
 
+## 🧱 8. Server Component vs Client Component (Next.js App Router)
+
+Isso aqui **não tem equivalente direto no Angular** — é o conceito mais
+genuinamente novo da Milestone 5, vale prestar atenção.
+
+No Angular, toda a aplicação é renderizada no cliente (mesmo com Angular
+Universal fazendo SSR, o resultado final ainda é "hidrata tudo e o
+framework roda inteiro no browser"). No Next.js App Router, cada arquivo
+`page.tsx`/componente é, **por padrão, um Server Component**: ele roda *só*
+no servidor, nunca manda o próprio código JS pro navegador — só o HTML já
+pronto. Isso é ótimo pra performance (menos JS baixado) mas tem uma
+limitação dura: **Server Component não pode ter `useState`, `onClick`, nem
+nada que dependa do navegador** — porque ele nunca roda lá.
+
+Quando você precisa de interatividade (estado, clique, `useEffect`), você
+declara isso explicitamente com a diretiva `"use client"` no topo do
+arquivo. Isso vira um "Client Component" — aí sim o React manda o JS dele
+pro browser e ele funciona como você já conhece de SPA.
+
+```tsx
+"use client";  // sem isso, useState() nem compila aqui
+
+export default function Home() {
+  const [jsonText, setJsonText] = useState("");
+  // ...
+}
+```
+
+No nosso projeto, `app/page.tsx` inteiro precisou de `"use client"` porque
+ele tem estado (o texto do JSON, o resultado, loading) e um `useEffect`
+pra buscar os samples. Já `VerdictResult.tsx` **não** precisou da diretiva
+- ele só recebe `verdict` como prop e desenha HTML, sem estado próprio nem
+handler de evento. Mas como ele é importado *dentro* de um Client
+Component (`page.tsx`), ele acaba entrando no mesmo pacote JS de qualquer
+jeito - a diretiva marca a **fronteira**, não cada arquivo individualmente.
+
+- 🅰️ **Ponte Angular:** não tem. O mais próximo, conceitualmente, é pensar
+  no Server Component como um template renderizado no backend e devolvido
+  como HTML puro (tipo uma view server-side clássica), e no Client
+  Component como o Angular de sempre - roda no browser, tem change
+  detection, reage a eventos.
+- 💻 **No projeto:** `"use client"` no topo de
+  `frontend/src/app/page.tsx`; `VerdictResult.tsx` fica sem a diretiva de
+  propósito, pra mostrar que nem tudo precisa virar Client Component.
+
+> ✏️ **TUA VEZ:**
+
+---
+
+## 🧱 9. `useState` (o "estado do componente" do React)
+
+Isso aqui **tem** ponte direta com Angular, só que inversa: em vez de um
+campo de classe (`this.jsonText = ""`) que o Angular observa via change
+detection (zone.js ou signals), o React exige que você **anuncie**
+explicitamente "isso aqui é estado" chamando `useState`:
+
+```tsx
+const [jsonText, setJsonText] = useState("");
+//     ^valor atual  ^função pra trocar o valor
+```
+
+`useState("")` devolve um par: o valor atual (`jsonText`) e uma função
+(`setJsonText`) que, quando chamada, **manda o React re-renderizar** o
+componente com o novo valor. Diferente do Angular, onde você muda
+`this.jsonText = "novo valor"` direto e o framework detecta a mudança por
+fora, no React você nunca muda a variável na mão - só chama o `setState`
+que o próprio hook te deu.
+
+Por que essa página não precisou de nada tipo NgRx/store? Porque todo o
+estado (`jsonText`, `verdict`, `loading`, `error`, `samples`) é **local a
+um único componente** - ninguém mais na árvore precisa ler ou escrever
+nisso. Sempre que o estado é usado por várias telas/componentes distantes
+é que passa a valer a pena um store global; aqui seria over-engineering.
+
+- 🅰️ **Ponte Angular:** `useState` é o campo de classe do seu
+  `@Component`; `setJsonText(...)` é o que, no Angular, aconteceria
+  sozinho depois de você atribuir o campo (a change detection já cobre
+  isso pra você). No React, você tem que pedir o re-render explicitamente
+  chamando a função setter.
+- 💻 **No projeto:** todos os `useState` no topo de
+  `frontend/src/app/page.tsx`.
+
+> ✏️ **TUA VEZ:**
+
+---
+
 ## Por preencher (próximos conceitos)
 
 - [ ] `.invoke()` passo a passo (o que roda, em que ordem)
 - [x] ~~Structured output / tool-use da Claude~~ → virou o tijolo 7
 - [ ] Fallback e por que `classify` tem um `try/except` largo
 - [ ] Pydantic vs TypedDict (validação em runtime vs só no editor)
+- [x] ~~Server vs Client Component~~ → virou o tijolo 8
+- [x] ~~useState~~ → virou o tijolo 9
+- [ ] Props (o `@Input()` do React) - de onde vêm `samples`, `jsonText`, etc. em `DisputeForm`
