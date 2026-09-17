@@ -37,7 +37,7 @@ etiquetadas e preenchidas".
 - 💻 **No projeto:** todo dict que a gente passa/retorna. Ex.: `{"score": 0.7, "signal_reasons": [...]}`.
 
 > ✏️ **TUA VEZ:**
-> _(reescreve aqui com tuas palavras)_
+>Chave é basicamente uma maneira de traduzir pra um atributo do objeto, como ex: obj1={nome:"João"} o obj1 possue a chave nome que também pode ser entendidta como key, atributo, chave...
 
 ---
 
@@ -54,7 +54,7 @@ situação atual do sistema.
 - 💻 **No projeto:** `DisputeState` em `app/agent/state.py` — a caixa que viaja pelo grafo.
 
 > ✏️ **TUA VEZ:**
-> _(reescreve aqui com tuas palavras)_
+> _State nada mais é que uma visão do momento atual daquele sistema, como sistemas grandes geralmente precisam compartilhar dados como: usuario logado, é usado o método de state que possuem suas proprias convenções sobre quem pode ou não mudar esses dados, tendo actions, reducers, store, cada um com sua função, e o LangGraph faz algo similar.
 
 ---
 
@@ -79,7 +79,7 @@ criada. Isso só é possível porque `DisputeState` foi declarado com
 - 💻 **No projeto:** `dispute_graph.invoke({"dispute": ...})` em `app/main.py` dispara essa viagem.
 
 > ✏️ **TUA VEZ:**
-> _(reescreve aqui com tuas palavras)_
+> O Grafo vai preenchendo o state atraves desse invoke() que diferente do NgRx que é movido a cliques (actions) que chamam os reducers, no grafo isso é feito de forma fixa, e também o fato de no tipo do state estar declarado com total= False permite que o objeto possa ser entregue incompleto (nem todos as chaves sempre estarão preenchidas/disponiveis, dependendo da logica)
 
 ---
 
@@ -101,7 +101,7 @@ mutar o antigo.
 - 💻 **No projeto:** cada função em `app/agent/nodes/` é um reducer.
 
 > ✏️ **TUA VEZ:**
-> _(reescreve aqui com tuas palavras)_
+> Entendi que o reducer é uma função que devolve um state novo, mas ela não altera o state antigo. No NgRx temos actions que nada mais são disparadas pelas telas (atraves dos clicks), elas servem pra anunciar/notificar o reducer que algo precisa ser alterado. No LangGraph não existe action, uma vez que o proprio invoke faz isso.
 
 ---
 
@@ -121,9 +121,38 @@ _(a preencher — a ligação entre os nós e o "switch" que decide o caminho)_
 
 ---
 
+## 🧱 7. Structured output (tool-use) + o bug do `max_tokens`
+
+Em vez de pedir texto pra Claude e sair com regex atrás dos dados, a gente
+dá uma **"ferramenta" (tool) com um schema** — as gavetas que a resposta
+*tem* que ter. A Claude responde preenchendo esse schema, e volta um JSON
+pronto pra virar objeto. Muito mais confiável que parsear texto solto.
+
+Mas não é mágica — dois modos de falha clássicos:
+
+1. **Truncamento:** se `max_tokens` for baixo, o JSON é cortado no meio e
+   vem incompleto. Foi o que aconteceu com a gente: `max_tokens=300`, a
+   Claude escreveu um `meaning` gigante, estourou o limite
+   (`stop_reason: max_tokens`) e o `required_evidence` nunca chegou →
+   `KeyError`. Conserto: folga no `max_tokens` + pedir resposta concisa.
+2. **Campo faltando:** o modelo às vezes omite um campo. Conserto: validar
+   e ter um fallback.
+
+- 🅰️ **Ponte:** o `input_schema` do tool é tipo um DTO/`class-validator`
+  que você entrega PRA Claude preencher, em vez de validar o que chega. E o
+  fallback é o equivalente a um `try/catch` que devolve um valor-padrão
+  quando o serviço externo falha.
+- 💻 **No projeto:** `_CLASSIFY_TOOL` em `app/agent/nodes/classify.py`; o
+  `try/except` largo que cai no `REASON_CODES`.
+
+> ✏️ **TUA VEZ:**
+> _(reescreve aqui com tuas palavras)_
+
+---
+
 ## Por preencher (próximos conceitos)
 
 - [ ] `.invoke()` passo a passo (o que roda, em que ordem)
-- [ ] Structured output / tool-use da Claude (como pedir JSON confiável)
+- [x] ~~Structured output / tool-use da Claude~~ → virou o tijolo 7
 - [ ] Fallback e por que `classify` tem um `try/except` largo
 - [ ] Pydantic vs TypedDict (validação em runtime vs só no editor)

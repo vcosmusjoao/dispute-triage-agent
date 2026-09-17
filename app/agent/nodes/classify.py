@@ -30,7 +30,7 @@ _CLASSIFY_TOOL = {
         "properties": {
             "meaning": {
                 "type": "string",
-                "description": "A short, human-readable interpretation of the reason code.",
+                "description": "A concise, one-sentence human-readable interpretation of the reason code.",
             },
             "required_evidence": {
                 "type": "array",
@@ -59,7 +59,11 @@ def classify(state: DisputeState) -> dict:
         client = _get_client()
         response = client.messages.create(
             model=MODEL,
-            max_tokens=300,
+            # Enough headroom for the full tool-call JSON. Too small and the
+            # structured output gets truncated mid-JSON (stop_reason ==
+            # "max_tokens"), leaving required fields missing -> KeyError ->
+            # fallback. Learned this the hard way with max_tokens=300.
+            max_tokens=1024,
             tools=[_CLASSIFY_TOOL],
             tool_choice={"type": "tool", "name": "classify_reason_code"},
             messages=[
